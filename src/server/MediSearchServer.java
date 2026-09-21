@@ -178,7 +178,11 @@ public class MediSearchServer {
         for (String pair : query.split("&")) {
             int idx = pair.indexOf("=");
             if (idx > 0 && pair.substring(0, idx).equals(param)) {
-                return java.net.URLDecoder.decode(pair.substring(idx + 1), java.nio.charset.StandardCharsets.UTF_8);
+                try {
+                    return java.net.URLDecoder.decode(pair.substring(idx + 1), "UTF-8");
+                } catch (java.io.UnsupportedEncodingException e) {
+                    return pair.substring(idx + 1);
+                }
             }
         }
         return null;
