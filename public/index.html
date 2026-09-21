@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediSearch - Patient Record Retrieval System</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>MediSearch</h1>
+            <p>Intelligent Patient Record Retrieval System</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="dashboard">
+            <div class="card stat-card">
+                <h3>Total Patients</h3>
+                <p id="total-patients-count" class="stat-value">Loading...</p>
+            </div>
+            <div class="card stat-card">
+                <h3>Search Algorithms</h3>
+                <p class="stat-value">4</p>
+            </div>
+            <div class="card stat-card">
+                <h3>Similar Case Search</h3>
+                <p class="stat-value">Enabled</p>
+            </div>
+            <div class="card stat-card">
+                <h3>Multi-Keyword Search</h3>
+                <p class="stat-value">Enabled</p>
+            </div>
+        </section>
+
+        <nav class="tabs">
+            <button class="tab-btn active" onclick="showTab('tab-search')">Patient Search</button>
+            <button class="tab-btn" onclick="showTab('tab-multi')">Multi-Keyword Search</button>
+            <button class="tab-btn" onclick="showTab('tab-similar')">Similar Cases</button>
+            <button class="tab-btn" onclick="showTab('tab-all')">All Patients</button>
+        </nav>
+
+        <!-- Patient Search Tab -->
+        <section id="tab-search" class="tab-content active">
+            <div class="card search-card">
+                <h2>Single Keyword Search</h2>
+                <p>Search for keywords like "diabetes", "fever", "hypertension".</p>
+                <div class="search-form">
+                    <input type="text" id="single-query" placeholder="Enter keyword...">
+                    <button class="btn btn-primary" onclick="performSearch('kmp')">KMP Search</button>
+                    <button class="btn btn-secondary" onclick="performSearch('rabinkarp')">Rabin-Karp Search</button>
+                </div>
+            </div>
+            <div id="single-results" class="results-container"></div>
+        </section>
+
+        <!-- Multi-Keyword Search Tab -->
+        <section id="tab-multi" class="tab-content" style="display: none;">
+            <div class="card search-card">
+                <h2>Multi-Keyword Search (Aho-Corasick)</h2>
+                <p>Search for multiple keywords at once. Separate keywords with a comma (e.g., "diabetes, hypertension, fever").</p>
+                <div class="search-form">
+                    <input type="text" id="multi-query" placeholder="Enter keywords separated by comma...">
+                    <button class="btn btn-primary" onclick="performMultiSearch()">Aho-Corasick Search</button>
+                </div>
+            </div>
+            <div id="multi-results" class="results-container"></div>
+        </section>
+
+        <!-- Similar Cases Tab -->
+        <section id="tab-similar" class="tab-content" style="display: none;">
+            <div class="card search-card">
+                <h2>Find Similar Medical Cases (Edit Distance)</h2>
+                <p>Find similar cases based on diagnosis description. Wagner-Fischer DP algorithm will calculate string similarity.</p>
+                <div class="search-form">
+                    <input type="text" id="similar-query" placeholder="Enter case description (e.g. diabtes fever)...">
+                    <button class="btn btn-primary" onclick="performSimilarSearch()">Find Similar Cases</button>
+                </div>
+            </div>
+            <div id="similar-results" class="results-container"></div>
+        </section>
+
+        <!-- All Patients Tab -->
+        <section id="tab-all" class="tab-content" style="display: none;">
+            <div class="card">
+                <h2>All Patient Records</h2>
+                <button class="btn btn-secondary mb-2" onclick="loadAllPatients()">Refresh List</button>
+                <div id="all-patients-list" class="results-container"></div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>DSA-3 Project - MediSearch</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

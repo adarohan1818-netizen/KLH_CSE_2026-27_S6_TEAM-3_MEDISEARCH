@@ -1,0 +1,240 @@
+:root {
+    --primary-color: #0056b3;
+    --primary-hover: #004494;
+    --secondary-color: #e9ecef;
+    --secondary-hover: #dee2e6;
+    --bg-color: #f4f7f6;
+    --text-main: #333;
+    --text-light: #666;
+    --card-bg: #fff;
+    --border-color: #e0e0e0;
+    --accent-blue: #e3f2fd;
+    --badge-kmp: #e8f5e9;
+    --badge-rk: #fff3e0;
+    --badge-aho: #f3e5f5;
+    --badge-ed: #e1f5fe;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header */
+.header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 30px 0;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 5px;
+}
+
+.header p {
+    font-weight: 300;
+    opacity: 0.9;
+}
+
+/* Dashboard */
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: -30px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    text-align: center;
+    padding: 20px;
+}
+
+.stat-card h3 {
+    font-size: 1rem;
+    color: var(--text-light);
+    margin-bottom: 10px;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* Cards */
+.card {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    padding: 25px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-light);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.tab-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+    background-color: var(--accent-blue);
+}
+
+/* Search Forms */
+.search-form {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+input[type="text"] {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+    font-family: inherit;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    color: var(--text-main);
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-hover);
+}
+
+.mb-2 {
+    margin-bottom: 20px;
+}
+
+/* Results */
+.results-container {
+    display: grid;
+    gap: 15px;
+}
+
+.patient-card {
+    border-left: 4px solid var(--primary-color);
+}
+
+.patient-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 10px;
+}
+
+.patient-header h3 {
+    color: var(--primary-color);
+}
+
+.badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.badge.kmp { background-color: var(--badge-kmp); color: #2e7d32; }
+.badge.rabin-karp { background-color: var(--badge-rk); color: #e65100; }
+.badge.aho-corasick { background-color: var(--badge-aho); color: #6a1b9a; }
+.badge.edit-distance { background-color: var(--badge-ed); color: #0277bd; }
+
+.patient-details p {
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.patient-details strong {
+    color: #555;
+    display: inline-block;
+    width: 150px;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 30px 0;
+    color: var(--text-light);
+    margin-top: 40px;
+}
+
+/* Utility */
+.no-results {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-light);
+    background-color: white;
+    border-radius: 8px;
+    border: 1px dashed var(--border-color);
+}
