@@ -1,0 +1,10 @@
+Patient ID: P015
+Name: Anil Sharma
+Age: 61
+Gender: Male
+Blood Group: A+
+Diagnosis: Diabetes, hypertension and chest pain
+Symptoms: chest pain, fatigue, increased thirst
+Medications: Metformin, Aspirin, Amlodipine
+Lab Reports: ECG shows old changes
+Appointments: 2026-07-19

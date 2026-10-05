@@ -1,0 +1,10 @@
+Patient ID: P012
+Name: Kavya Reddy
+Age: 30
+Gender: Female
+Blood Group: A+
+Diagnosis: Asthma with seasonal cold
+Symptoms: cough, cold, wheezing
+Medications: Salbutamol inhaler
+Lab Reports: Peak flow reduced
+Appointments: 2026-09-05

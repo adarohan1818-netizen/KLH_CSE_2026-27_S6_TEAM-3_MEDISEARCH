@@ -1,0 +1,10 @@
+Patient ID: P007
+Name: David Fernandes
+Age: 50
+Gender: Male
+Blood Group: A-
+Diagnosis: Type 2 diabetes with peripheral neuropathy
+Symptoms: fatigue, numbness in feet, headache
+Medications: Glipizide, Gabapentin
+Lab Reports: HbA1c 8.1 percent
+Appointments: 2026-08-04

@@ -1,0 +1,10 @@
+Patient ID: P019
+Name: Karthik Subramanian
+Age: 44
+Gender: Male
+Blood Group: B+
+Diagnosis: Fever with cough and asthma exacerbation
+Symptoms: fever, cough, chest pain, wheezing
+Medications: Paracetamol, Salbutamol
+Lab Reports: Chest X-ray mild infiltrate
+Appointments: 2026-09-17

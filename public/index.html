@@ -1,103 +1,277 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediSearch - Patient Record Retrieval System</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediSearch &mdash; A Searchable Patient Repository</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header class="header">
-        <div class="container">
-            <h1>MediSearch</h1>
-            <p>Intelligent Patient Record Retrieval System</p>
+
+  <!-- ============================ LOGIN VIEW ============================ -->
+  <div id="login-view" class="wrap login-container">
+    <div class="login-card">
+      <div class="brand text-center">
+        <h1>MediSearch</h1>
+        <p class="tagline">A Searchable Patient Repository</p>
+      </div>
+
+      <div id="login-message" class="message hidden"></div>
+
+      <form id="login-form" class="login-form">
+        <div class="field">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" required autocomplete="username" placeholder="admin">
         </div>
+
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="admin123">
+        </div>
+
+        <button type="submit" id="login-button" class="btn btn-block">Login</button>
+      </form>
+
+      <div class="login-footer">
+        <p class="note">
+          <strong>Demo Credentials:</strong><br>
+          Username: <code>admin</code> &middot; Password: <code>admin123</code>
+        </p>
+        <p class="note text-muted">
+          DSA-III Academic Project &middot; File-based User Data (<code>data/users/users.txt</code>)
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================ MAIN APP VIEW ============================ -->
+  <div id="app-view" class="hidden">
+    <!-- ============================ HEADER ============================ -->
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <div class="brand">
+          <h1>MediSearch</h1>
+          <p class="tagline">A Searchable Patient Repository</p>
+        </div>
+        <nav class="nav">
+          <a href="#dashboard">Dashboard</a>
+          <a href="#search">Search</a>
+          <a href="#patients">Patients</a>
+          <a href="#add-patient">Add Patient</a>
+          <a href="#about">About</a>
+        </nav>
+        <div class="user-status">
+          <span id="user-info" class="user-badge">Role: Doctor</span>
+          <button type="button" id="logout-button" class="btn btn-quiet btn-sm">Logout</button>
+        </div>
+      </div>
     </header>
 
-    <main class="container">
-        <section class="dashboard">
-            <div class="card stat-card">
-                <h3>Total Patients</h3>
-                <p id="total-patients-count" class="stat-value">Loading...</p>
-            </div>
-            <div class="card stat-card">
-                <h3>Search Algorithms</h3>
-                <p class="stat-value">4</p>
-            </div>
-            <div class="card stat-card">
-                <h3>Similar Case Search</h3>
-                <p class="stat-value">Enabled</p>
-            </div>
-            <div class="card stat-card">
-                <h3>Multi-Keyword Search</h3>
-                <p class="stat-value">Enabled</p>
-            </div>
-        </section>
+    <main class="wrap">
 
-        <nav class="tabs">
-            <button class="tab-btn active" onclick="showTab('tab-search')">Patient Search</button>
-            <button class="tab-btn" onclick="showTab('tab-multi')">Multi-Keyword Search</button>
-            <button class="tab-btn" onclick="showTab('tab-similar')">Similar Cases</button>
-            <button class="tab-btn" onclick="showTab('tab-all')">All Patients</button>
-        </nav>
+      <!-- ============================= HERO ============================= -->
+      <section class="hero">
+        <h2>MediSearch</h2>
+        <p>
+          Search patient records using the <strong>Aho-Corasick</strong> multiple-pattern string matching algorithm.
+          All persistent data is stored in local text files without external databases.
+        </p>
+        <a class="btn" href="#search">Search Records</a>
+      </section>
 
-        <!-- Patient Search Tab -->
-        <section id="tab-search" class="tab-content active">
-            <div class="card search-card">
-                <h2>Single Keyword Search</h2>
-                <p>Search for keywords like "diabetes", "fever", "hypertension".</p>
-                <div class="search-form">
-                    <input type="text" id="single-query" placeholder="Enter keyword...">
-                    <button class="btn btn-primary" onclick="performSearch('kmp')">KMP Search</button>
-                    <button class="btn btn-secondary" onclick="performSearch('rabinkarp')">Rabin-Karp Search</button>
-                </div>
-            </div>
-            <div id="single-results" class="results-container"></div>
-        </section>
+      <!-- =========================== DASHBOARD ========================== -->
+      <section id="dashboard">
+        <h2 class="section-title">Dashboard</h2>
 
-        <!-- Multi-Keyword Search Tab -->
-        <section id="tab-multi" class="tab-content" style="display: none;">
-            <div class="card search-card">
-                <h2>Multi-Keyword Search (Aho-Corasick)</h2>
-                <p>Search for multiple keywords at once. Separate keywords with a comma (e.g., "diabetes, hypertension, fever").</p>
-                <div class="search-form">
-                    <input type="text" id="multi-query" placeholder="Enter keywords separated by comma...">
-                    <button class="btn btn-primary" onclick="performMultiSearch()">Aho-Corasick Search</button>
-                </div>
-            </div>
-            <div id="multi-results" class="results-container"></div>
-        </section>
+        <div class="stats">
+          <div class="stat">
+            <span class="stat-label">Total Patients</span>
+            <span class="stat-value" id="stat-patients">&mdash;</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Total Records</span>
+            <span class="stat-value" id="stat-records">&mdash;</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Recent Search Keywords</span>
+            <span class="stat-value" id="stat-keywords">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Matches Found</span>
+            <span class="stat-value" id="stat-matches">0</span>
+          </div>
+        </div>
 
-        <!-- Similar Cases Tab -->
-        <section id="tab-similar" class="tab-content" style="display: none;">
-            <div class="card search-card">
-                <h2>Find Similar Medical Cases (Edit Distance)</h2>
-                <p>Find similar cases based on diagnosis description. Wagner-Fischer DP algorithm will calculate string similarity.</p>
-                <div class="search-form">
-                    <input type="text" id="similar-query" placeholder="Enter case description (e.g. diabtes fever)...">
-                    <button class="btn btn-primary" onclick="performSimilarSearch()">Find Similar Cases</button>
-                </div>
-            </div>
-            <div id="similar-results" class="results-container"></div>
-        </section>
+        <p class="note">
+          Records are loaded directly from <code>data/patients/*.txt</code> using Java file handling.
+          Search is powered by the Aho-Corasick multi-pattern search engine.
+        </p>
+      </section>
 
-        <!-- All Patients Tab -->
-        <section id="tab-all" class="tab-content" style="display: none;">
-            <div class="card">
-                <h2>All Patient Records</h2>
-                <button class="btn btn-secondary mb-2" onclick="loadAllPatients()">Refresh List</button>
-                <div id="all-patients-list" class="results-container"></div>
-            </div>
-        </section>
+      <!-- ===================== SEARCH (MAIN FEATURE) ==================== -->
+      <section id="search">
+        <h2 class="section-title">Search Patient Records</h2>
+
+        <label class="field-label" for="keyword-input">Enter multiple keywords separated by commas</label>
+        <input
+          type="text"
+          id="keyword-input"
+          class="text-input"
+          placeholder="fever, cough, diabetes, headache"
+          autocomplete="off">
+
+        <p class="hint">
+          Multiple keywords are searched simultaneously in a single pass using Aho-Corasick. Max 32 keywords per search.
+        </p>
+
+        <div class="button-row">
+          <button type="button" id="search-button" class="btn">Search</button>
+          <button type="button" id="clear-button" class="btn btn-quiet">Clear</button>
+        </div>
+
+        <div id="search-message" class="message hidden"></div>
+
+        <div id="search-results" class="results"></div>
+      </section>
+
+      <!-- ========================= PATIENT TABLE ======================== -->
+      <section id="patients">
+        <h2 class="section-title">Patient Records</h2>
+        <p class="hint">Click any patient row or 'View Record' to open the complete record.</p>
+
+        <div id="patients-message" class="message hidden"></div>
+
+        <div class="table-scroll">
+          <table class="records-table">
+            <thead>
+              <tr>
+                <th>Patient ID</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Diagnosis</th>
+                <th>Symptoms</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="patients-body">
+              <tr><td colspan="7" class="table-empty">Loading patient records&hellip;</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========================== ADD PATIENT ========================= -->
+      <section id="add-patient">
+        <h2 class="section-title">Add Patient</h2>
+        <p class="hint">
+          Saving creates a new text file in <code>data/patients/patient_xxx.txt</code>.
+        </p>
+
+        <div id="add-message" class="message hidden"></div>
+
+        <form id="add-patient-form" class="form-grid" autocomplete="off">
+          <div class="field">
+            <label for="f-name">Name *</label>
+            <input type="text" id="f-name" name="name" required>
+          </div>
+          <div class="field">
+            <label for="f-age">Age</label>
+            <input type="text" id="f-age" name="age" inputmode="numeric" placeholder="45">
+          </div>
+          <div class="field">
+            <label for="f-gender">Gender</label>
+            <input type="text" id="f-gender" name="gender" placeholder="Male / Female">
+          </div>
+          <div class="field">
+            <label for="f-blood">Blood Group</label>
+            <input type="text" id="f-blood" name="bloodGroup" placeholder="B+">
+          </div>
+
+          <div class="field field-wide">
+            <label for="f-diagnosis">Diagnosis *</label>
+            <input type="text" id="f-diagnosis" name="diagnosis" required placeholder="Diabetes and hypertension">
+          </div>
+          <div class="field field-wide">
+            <label for="f-symptoms">Symptoms</label>
+            <input type="text" id="f-symptoms" name="symptoms" placeholder="fatigue, headache, increased thirst">
+          </div>
+          <div class="field field-wide">
+            <label for="f-medications">Medications</label>
+            <input type="text" id="f-medications" name="medications" placeholder="Metformin, Amlodipine">
+          </div>
+          <div class="field field-wide">
+            <label for="f-lab">Lab Reports</label>
+            <input type="text" id="f-lab" name="labReports" placeholder="Blood glucose elevated">
+          </div>
+          <div class="field field-wide">
+            <label for="f-appointments">Appointments</label>
+            <input type="text" id="f-appointments" name="appointments" placeholder="2026-09-10">
+          </div>
+
+          <div class="field field-wide">
+            <button type="submit" class="btn" id="save-button">Save Patient</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ============================= ABOUT ============================ -->
+      <section id="about">
+        <h2 class="section-title">About</h2>
+
+        <p>
+          MediSearch is a file-backed searchable patient record system built for a DSA-III project.
+          It allows medical professionals to perform simultaneous multi-keyword searches across all patient files.
+        </p>
+
+        <h3>Core Specifications</h3>
+        <dl class="about-list">
+          <dt>Core Algorithm</dt>
+          <dd>Aho-Corasick (Trie construction, BFS failure links, 32-bit output bitmask).</dd>
+
+          <dt>Storage</dt>
+          <dd>Local Java File Handling (<code>data/patients/*.txt</code>, <code>data/users/users.txt</code>). No database is used.</dd>
+
+          <dt>Language & Backend</dt>
+          <dd>Java (Standard Library <code>com.sun.net.httpserver.HttpServer</code>).</dd>
+
+          <dt>Frontend</dt>
+          <dd>Plain HTML5, CSS3, Vanilla JavaScript.</dd>
+        </dl>
+
+        <h3>Aho-Corasick Implementation Details</h3>
+        <ul class="plain-list">
+          <li><strong>Trie Transition Matrix <code>g[][]</code>:</strong> Stores prefix tree edges.</li>
+          <li><strong>Failure Links <code>f[]</code>:</strong> Computed level-by-level using Queue BFS. Enables scan without backtracking.</li>
+          <li><strong>Output Bitmask <code>out[]</code>:</strong> Bit <em>i</em> indicates keyword <em>i</em> match.</li>
+          <li><strong>Bitmask Constraint:</strong> Supports up to 32 keywords per search due to 32-bit integer bitwise operations.</li>
+          <li><strong>Time Complexity:</strong> O(M + N + Z) where M = total keyword length, N = text length, Z = total matches.</li>
+        </ul>
+      </section>
+
     </main>
 
-    <footer>
-        <div class="container">
-            <p>DSA-3 Project - MediSearch</p>
+    <!-- ========================= PATIENT MODAL ======================== -->
+    <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-panel">
+        <div class="modal-head">
+          <h2 id="modal-title">Patient Information</h2>
+          <button type="button" class="btn btn-quiet" id="modal-close">Close</button>
         </div>
-    </footer>
+        <div id="modal-body"></div>
+      </div>
+    </div>
 
-    <script src="script.js"></script>
+    <!-- ============================= FOOTER =========================== -->
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>
+          MediSearch &mdash; DSA-III Academic Project &middot; Algorithm: Aho-Corasick &middot; Storage: Local Text Files
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>

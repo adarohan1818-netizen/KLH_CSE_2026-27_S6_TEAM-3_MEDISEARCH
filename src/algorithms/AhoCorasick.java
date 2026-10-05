@@ -1,7 +1,5 @@
 package algorithms;
 
-import models.Patient;
-import repository.PatientRepository;
 
 import java.util.*;
 
@@ -13,6 +11,10 @@ public class AhoCorasick {
     private int[][] g = new int[MAX_STATES][MAX_CHARS];
     private int states = 1;
     private String[] words;
+
+    public int getStateCount() {
+        return states;
+    }
 
     // Time Complexity: O(N + M + Z) where N is text length, M is sum of lengths of all keywords, Z is number of matches
     // Space Complexity: O(MAX_STATES * MAX_CHARS)
@@ -101,51 +103,5 @@ public class AhoCorasick {
             matchedWords.add(words[idx]);
         }
         return matchedWords;
-    }
-
-    public static List<SearchResult> search(String[] keywords) {
-        List<SearchResult> results = new ArrayList<>();
-        if (keywords == null || keywords.length == 0) return results;
-
-        // Convert to lowercase
-        String[] lowerKeywords = new String[keywords.length];
-        for (int i = 0; i < keywords.length; i++) {
-            lowerKeywords[i] = keywords[i].trim().toLowerCase();
-        }
-
-        AhoCorasick ac = new AhoCorasick(lowerKeywords);
-
-        for (Patient patient : PatientRepository.getAllPatients()) {
-            String text = patient.getFullRecordText();
-            List<String> found = ac.searchInText(text);
-            if (!found.isEmpty()) {
-                results.add(new SearchResult(patient, found));
-            }
-        }
-        return results;
-    }
-
-    public static class SearchResult {
-        public Patient patient;
-        public List<String> foundKeywords;
-
-        public SearchResult(Patient p, List<String> f) {
-            this.patient = p;
-            this.foundKeywords = f;
-        }
-        
-        public String toJson() {
-            StringBuilder keywordsJson = new StringBuilder("[");
-            for (int i = 0; i < foundKeywords.size(); i++) {
-                keywordsJson.append("\"").append(foundKeywords.get(i)).append("\"");
-                if (i < foundKeywords.size() - 1) keywordsJson.append(", ");
-            }
-            keywordsJson.append("]");
-            
-            return "{" +
-                   "\"patient\": " + patient.toJson() + ", " +
-                   "\"foundKeywords\": " + keywordsJson.toString() +
-                   "}";
-        }
     }
 }

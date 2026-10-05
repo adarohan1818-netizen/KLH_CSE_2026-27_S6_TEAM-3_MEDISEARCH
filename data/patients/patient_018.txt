@@ -1,0 +1,10 @@
+Patient ID: P018
+Name: Ritu Agarwal
+Age: 39
+Gender: Female
+Blood Group: A-
+Diagnosis: Diabetes with hypothyroidism
+Symptoms: fatigue, cold intolerance, increased thirst
+Medications: Metformin, Levothyroxine
+Lab Reports: HbA1c 7.2 percent, TSH elevated
+Appointments: 2026-07-25

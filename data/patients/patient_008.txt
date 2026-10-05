@@ -1,0 +1,10 @@
+Patient ID: P008
+Name: Priya Menon
+Age: 36
+Gender: Female
+Blood Group: B+
+Diagnosis: Anxiety with tension headache
+Symptoms: headache, insomnia, fatigue
+Medications: Sertraline
+Lab Reports: Blood panel normal
+Appointments: 2026-09-15

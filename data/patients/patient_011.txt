@@ -1,0 +1,10 @@
+Patient ID: P011
+Name: Mohammed Ali
+Age: 47
+Gender: Male
+Blood Group: B+
+Diagnosis: Diabetes and hypertension
+Symptoms: headache, increased thirst, fatigue
+Medications: Metformin, Amlodipine
+Lab Reports: Blood glucose elevated
+Appointments: 2026-08-28

@@ -1,0 +1,10 @@
+Patient ID: P020
+Name: Asha Nair
+Age: 68
+Gender: Female
+Blood Group: O+
+Diagnosis: Hypertension, diabetes and osteoarthritis
+Symptoms: fatigue, headache, joint pain
+Medications: Amlodipine, Metformin
+Lab Reports: Blood glucose elevated, BP 145 over 90
+Appointments: 2026-08-30

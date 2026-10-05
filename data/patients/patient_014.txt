@@ -1,0 +1,10 @@
+Patient ID: P014
+Name: Neha Joshi
+Age: 26
+Gender: Female
+Blood Group: B-
+Diagnosis: Viral fever with headache
+Symptoms: fever, headache, body ache
+Medications: Paracetamol
+Lab Reports: Dengue test negative
+Appointments: 2026-09-21

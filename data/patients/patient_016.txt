@@ -1,0 +1,10 @@
+Patient ID: P016
+Name: Divya Pillai
+Age: 34
+Gender: Female
+Blood Group: O+
+Diagnosis: Asthma
+Symptoms: cough, chest pain, wheezing
+Medications: Budesonide inhaler
+Lab Reports: Spirometry mild obstruction
+Appointments: 2026-08-11

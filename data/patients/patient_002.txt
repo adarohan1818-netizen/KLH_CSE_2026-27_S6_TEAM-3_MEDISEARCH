@@ -1,0 +1,10 @@
+Patient ID: P002
+Name: Anita Desai
+Age: 32
+Gender: Female
+Blood Group: O+
+Diagnosis: Asthma with allergic rhinitis
+Symptoms: cough, wheezing, cold
+Medications: Salbutamol inhaler, Cetirizine
+Lab Reports: Spirometry shows mild obstruction
+Appointments: 2026-08-22

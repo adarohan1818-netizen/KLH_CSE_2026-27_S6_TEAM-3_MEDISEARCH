@@ -1,0 +1,10 @@
+Patient ID: P006
+Name: Sneha Iyer
+Age: 41
+Gender: Female
+Blood Group: O-
+Diagnosis: Hypothyroidism
+Symptoms: fatigue, cold intolerance, weight gain
+Medications: Levothyroxine
+Lab Reports: TSH elevated
+Appointments: 2026-05-11

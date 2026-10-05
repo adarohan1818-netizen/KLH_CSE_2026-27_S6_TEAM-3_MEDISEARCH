@@ -1,0 +1,10 @@
+Patient ID: P010
+Name: Lakshmi Rao
+Age: 22
+Gender: Female
+Blood Group: AB-
+Diagnosis: Acute bronchitis with fever
+Symptoms: cough, fever, chest pain
+Medications: Amoxicillin, Paracetamol
+Lab Reports: Chest X-ray clear
+Appointments: 2026-09-19

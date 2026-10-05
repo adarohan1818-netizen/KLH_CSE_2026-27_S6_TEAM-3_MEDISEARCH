@@ -1,0 +1,10 @@
+Patient ID: P017
+Name: Sanjay Verma
+Age: 49
+Gender: Male
+Blood Group: AB+
+Diagnosis: Hypertension with migraine
+Symptoms: headache, dizziness, fatigue
+Medications: Telmisartan
+Lab Reports: Blood pressure 150 over 95
+Appointments: 2026-09-08

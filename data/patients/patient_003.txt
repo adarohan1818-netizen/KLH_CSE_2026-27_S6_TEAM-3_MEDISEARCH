@@ -1,0 +1,10 @@
+Patient ID: P003
+Name: Vikram Nair
+Age: 58
+Gender: Male
+Blood Group: A+
+Diagnosis: Coronary artery disease with hypertension
+Symptoms: chest pain, fatigue, shortness of breath
+Medications: Atorvastatin, Aspirin
+Lab Reports: LDL cholesterol high
+Appointments: 2026-07-30

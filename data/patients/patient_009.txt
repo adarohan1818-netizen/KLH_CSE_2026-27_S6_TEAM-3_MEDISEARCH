@@ -1,0 +1,10 @@
+Patient ID: P009
+Name: Suresh Kumar
+Age: 72
+Gender: Male
+Blood Group: O+
+Diagnosis: Hypertension with chronic kidney disease
+Symptoms: fatigue, swelling in legs
+Medications: Amlodipine
+Lab Reports: Creatinine elevated
+Appointments: 2026-07-02

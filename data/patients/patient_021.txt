@@ -1,0 +1,10 @@
+Patient ID: P021
+Name: Test Patient
+Age: 29
+Gender: Female
+Blood Group: O+
+Diagnosis: Seasonal flu and fever
+Symptoms: fever, cough, fatigue
+Medications: Paracetamol
+Lab Reports: Normal
+Appointments: 2026-10-01

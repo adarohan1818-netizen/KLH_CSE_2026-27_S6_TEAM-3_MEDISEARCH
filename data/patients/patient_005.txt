@@ -1,0 +1,10 @@
+Patient ID: P005
+Name: Arjun Patel
+Age: 65
+Gender: Male
+Blood Group: B+
+Diagnosis: Type 2 diabetes with osteoarthritis
+Symptoms: fatigue, joint pain, mild fever
+Medications: Metformin, Ibuprofen
+Lab Reports: HbA1c 7.8 percent
+Appointments: 2026-06-18

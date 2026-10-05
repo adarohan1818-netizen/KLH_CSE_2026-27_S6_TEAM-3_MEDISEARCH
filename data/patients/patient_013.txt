@@ -1,0 +1,10 @@
+Patient ID: P013
+Name: Rohan Gupta
+Age: 55
+Gender: Male
+Blood Group: O+
+Diagnosis: Chronic obstructive pulmonary disease with hypertension
+Symptoms: cough, chest pain, breathlessness
+Medications: Tiotropium, Amlodipine
+Lab Reports: Chest X-ray hyperinflated lungs
+Appointments: 2026-06-27

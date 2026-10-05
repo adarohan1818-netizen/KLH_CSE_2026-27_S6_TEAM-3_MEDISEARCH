@@ -1,0 +1,10 @@
+Patient ID: P004
+Name: Meera Krishnan
+Age: 28
+Gender: Female
+Blood Group: AB+
+Diagnosis: Migraine
+Symptoms: headache, nausea, photophobia
+Medications: Sumatriptan
+Lab Reports: MRI brain normal
+Appointments: 2026-09-02
