@@ -1,300 +1,262 @@
-# MediSearch
-
-**A Searchable Patient Repository for Efficient Medical Record Management**
-
-A DSA-III academic project. Patient records and user credentials are stored as plain text files, and the search engine is a from-scratch implementation of the **Aho-Corasick** multiple-pattern string matching algorithm in Java.
-
----
-
-## 1. What MediSearch is
-
-MediSearch keeps patient details, diagnoses, prescriptions, lab reports and appointment history in one central repository. A doctor can log in and type several medical keywords at once to immediately see:
-
-* which patients matched,
-* exactly which keywords matched in each patient's record,
-* the full details of any patient record on demand,
-* persistent addition of new patient records.
-
-The entire system is a single Java application (no database, no framework) plus a plain HTML/CSS/JavaScript interface served by the built-in Java `HttpServer`.
-
-```text
-                HTML / CSS / JS
-                       |
-                  User Login / Search
-                       |
-                       v
-                 Java Application
-                       |
-         File Handling (java.io)
-           /                   \
-  data/patients/*.txt      data/users/users.txt
-          |
-          v
-   Aho-Corasick Engine
-          |
-          v
-    Search Results
-```
-
----
-
-## 2. The problem it solves
-
-A patient record holds free text: a diagnosis, a list of symptoms, medications, lab notes and appointment history. A doctor often needs to ask questions such as:
-
-* Which of my patients have **both** diabetes and hypertension?
-* Who has a fever **and** a cough recorded?
-* Which records mention asthma?
-
-Running one independent search per keyword is wasteful: every keyword search re-scans every record from the beginning. With `k` keywords and records of length `N`, that is `O(k × N)` work per record.
-
-MediSearch answers all of those questions in **a single pass per record**, so the cost grows with the length of the record, not with the number of keywords.
-
----
-
-## 3. Why Aho-Corasick is used
-
-Aho-Corasick is a multi-pattern matching algorithm. Given a set of keywords, it builds one automaton and then scans the text **once**, reporting every keyword that occurs anywhere in the text.
-
-| Approach | Work per record | Notes |
-|---|---|---|
-| `indexOf()` / `contains()` per keyword | `O(k × N)` | one full scan per keyword |
-| KMP per keyword | `O(k × N)` | still one scan per keyword |
-| **Aho-Corasick (this project)** | **`O(N + Z)`** | one scan finds all keywords |
-
-The advantage is exactly the feature MediSearch needs: **many keywords, one pass**.
-
-The implementation lives in `src/algorithms/AhoCorasick.java` and uses the classic three structures, named as in the original algorithm:
-
-```text
-g[][]   ->  goto function     (the Trie transitions)
-f[]     ->  failure links
-out[]   ->  output bitmask
-```
-
----
-
-## 4. How the Trie works
-
-**Step 1** of the algorithm builds a Trie (keyword tree) from all the keywords.
-
-Every keyword is inserted character by character, starting at the root. States that correspond to the same prefix are **shared**. For the keywords `he`, `she`, `his`, `hers` the Trie is:
-
-```text
-                    (root)
-                   /      \
-                  h         s
-                  |         |
-                  e         h
-                 (he)       |
-                /   \       e
-               r     i    (she)      <- "she" is its own state
-               |     |       :
-               s     s       : f[she] = he   (failure link, NOT a shared state)
-            (hers) (his)     :
-                              +----> points to the (he) state above
-```
-
-In code the Trie is the `g[][]` table: `g[state][ch]` is the state reached from `state` on character `ch`, or `-1` if no such transition exists.
-
-Inserting a keyword ends with `out[finalState] |= (1 << i)`, recording that keyword number `i` finishes at that state.
-
----
-
-## 5. What failure links do
-
-`f[state]` points to the state representing the **longest proper suffix** of the current state's string that is still a prefix of some keyword.
-
-When the next character cannot extend the current match, a naive algorithm would move back to the start of the text and begin again. Aho-Corasick instead follows failure links — which only ever move to *shallower* states — and then takes the real transition. **The text pointer never moves backwards**, which is why the scan is a single left-to-right pass.
-
-```text
-keywords: he, she, his, hers
-
-after matching "she", if the next character is 'r':
-  g[she]['r'] does not exist, so "she" cannot be extended
-  -> follow the failure link: f[she] = he
-  -> g[he]['r'] exists (from "hers"), so take it
-  -> we are now in state "her", still having consumed only one new character
-```
-
-Every direct child of the root gets `f[child] = 0`, and missing transitions out of the root are set to `0` so the fallback loop always terminates at the root.
-
----
-
-## 6. What the output array does
-
-`out[state]` is a **bitmask of keyword indices**.
-
-* Bit `i` set means `keywords[i]` occurs ending at this position.
-* The bit is set either because the keyword itself ends at this state (set during Trie insertion), or because it was **inherited through a failure link**.
-* A single state can therefore carry several bits, which is what lets one scan position report several keywords at once.
-
-During failure-link construction, outputs are merged along failure links:
-
-```java
-out[child] |= out[failure];
-```
-
-If the failure target is itself the end of a keyword, that keyword is also a suffix of the current match, so the current state inherits its bits.
-
-During the scan, whenever `out[currentState]` is non-zero the bitmask is decoded:
-
-```java
-for (int j = 0; j < keywords.length; j++) {
-    if ((mask & (1 << j)) != 0) {   // keyword j matched here
-        foundIndices.add(j);
-    }
-}
-```
-
-A `LinkedHashSet` collects the indices, so a keyword that appears ten times in one record is still reported **once** for that patient.
-
-> **Limit:** The bitmask is a 32-bit Java `int`, so one search supports **at most 32 keywords**. The system enforces this limit and rejects more than 32 keywords with a clear UI message.
-
----
-
-## 7. Why BFS is used
-
-Failure links are built **level by level** using a queue (BFS).
-
-The reason is a dependency: `f[state]` is always a **shallower** state than `state` itself. If states are processed in breadth-first order, then by the time a state is dequeued, its own failure link is already final, and the links of its children can be computed from correct information in one pass.
-
-```java
-Queue<Integer> queue = new LinkedList<Integer>();
-// ... depth 1: children of the root fail to the root ...
-while (!queue.isEmpty()) {
-    int state = queue.poll();
-    // ... compute f[child] for each child of 'state', then enqueue it ...
-}
-```
-
----
-
-## 8. How file handling is used
-
-There is **NO database in this project**. All application state lives in plain text files.
-
-### Patient Data Files (`data/patients/*.txt`)
-Each patient record is stored in a separate `.txt` file:
-
-```text
-Patient ID: P001
-Name: Rahul Sharma
-Age: 45
-Gender: Male
-Blood Group: B+
-Diagnosis: Diabetes and hypertension
-Symptoms: fatigue, headache, increased thirst
-Medications: Metformin
-Lab Reports: Blood glucose elevated
-Appointments: 2026-09-10
-```
-
-### User Credential Files (`data/users/users.txt`)
-User authentication data is stored as key-value lines:
-
-```text
-username=admin
-passwordHash=240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9
-role=doctor
-```
-
-`PatientFileService.java` and `UserFileService.java` use standard `java.io` classes only:
-* `File`, `FileInputStream`, `FileOutputStream`
-* `InputStreamReader`, `OutputStreamWriter`
-* `BufferedReader`, `BufferedWriter`
-
----
-
-## 9. How to run the project
-
-### Demo Credentials
-* **Username:** `admin`
-* **Password:** `admin123`
-
-### 1. Compile
-
-If `javac` is on your PATH:
-
-```bash
-mkdir out
-javac -encoding UTF-8 -d out src/Main.java src/algorithms/*.java src/models/*.java src/services/*.java
-```
-
-If `javac` is not on PATH (using built-in `ecj.jar`):
-
-```bash
-java -jar ecj.jar -1.8 -d out src/Main.java src/algorithms/AhoCorasick.java src/models/Patient.java src/models/SearchResult.java src/models/User.java src/services/PatientFileService.java src/services/UserFileService.java src/services/MediSearchService.java
-```
-
-### 2. Run
-
-```bash
-java -cp out Main
-```
-
-### 3. Open Website
-
-Open **http://localhost:8080** in your browser.
-
----
-
-## 10. Example searches
-
-Log in with `admin` / `admin123` and try these search queries:
-
-| Search | What it demonstrates |
-|---|---|
-| `diabetes` | single keyword search |
-| `fever, cough, diabetes` | multi-keyword search executed in a single pass |
-| `  FEVER ,, cough  ` | whitespace, comma cleanup, case-insensitivity |
-| `asthma` | substring match inside clinical text |
-| `fever, fever, FEVER` | deduplication of repeated keywords |
-| `chest pain` | exact multi-word pattern matching |
-
----
-
-## 11. Time and space complexity
-
-Let:
-* `M` = total length of all keywords
-* `N` = length of the text being scanned (one patient record)
-* `S` = number of states in the Trie
-* `Z` = number of matches reported
-* `σ` = alphabet size (256 ASCII)
-
-| Phase | Complexity |
-|---|---|
-| Build Trie (`g[][]`) | `O(M)` |
-| Build failure links + merge outputs (`f[]`, `out[]`), BFS | `O(S × σ)` |
-| Scan one record | `O(N + Z)` |
-| **Scan all records** | `O(P × (N + Z))`, where `P` = number of patients |
-
----
-
-## 12. Project structure
-
-```text
-D:\DSA
-├── data/
-│   ├── patients/                 # Patient files (patient_001.txt ... patient_020.txt)
-│   └── users/                    # User credential files (users.txt)
-├── public/                       # Frontend (HTML, CSS, JS)
-│   ├── index.html
-│   ├── style.css
-│   └── script.js
-├── src/
-│   ├── Main.java                 # HttpServer + API Endpoints + Session Management
-│   ├── algorithms/
-│   │   └── AhoCorasick.java      # Trie, failure links, bitmask output
-│   ├── models/
-│   │   ├── Patient.java          # Patient model + toFileText() + toJson()
-│   │   ├── SearchResult.java     # Search match model
-│   │   └── User.java              # User account model + SHA-256 password hash
-│   └── services/
-│       ├── PatientFileService.java # Patient file I/O handling
-│       ├── UserFileService.java    # User file I/O handling & auth
-│       └── MediSearchService.java  # Keyword sanitization & Aho-Corasick bridge
-├── ecj.jar                       # Eclipse Compiler for Java fallback
-└── README.md
-```
+MediSearch --- Intelligent Patient Record Retrieval System
+A DSA-III academic project for searching, comparing, and exploring
+synthetic patient records through a browser-based interface. The
+application combines a Java backend with an HTML, CSS, and JavaScript
+frontend, and demonstrates seven data-structure and algorithm techniques
+across four main areas: text searching, record similarity, capacity-flow
+analysis, and primality testing.
+Academic demonstration: MediSearch uses synthetic/demo patient
+data and file-based storage. It is not intended for real clinical use
+or production healthcare.
+
+1. What MediSearch Does
+MediSearch provides a central interface for working with patient
+records. Depending on the enabled feature, a user can:
+- Log in to the application.
+- Search patient records using clinical keywords or text patterns.
+- Use fuzzy matching to help find text despite small spelling
+  differences.
+- Compare records to identify shared text.
+- Run a maximum-flow calculation on a simplified hospital-capacity
+  network.
+- Test whether a number is prime or composite.
+- View patient records and add new records, which are stored in files.
+2. Application Architecture
+The browser interface communicates with a Java HTTP server. The Java
+application handles requests, loads and saves records, invokes the
+relevant algorithm, and returns results to the frontend.
+Browser UI (HTML / CSS / JavaScript)
+                 |
+                 v
+          Java HTTP Server
+                 |
+                 v
+       Services and File Handling
+          /       |        \
+         v        v         v
+  Patient Data  User Data  Algorithm Services
+                              |
+             +----------------+----------------+
+             |                |                |
+         Text Search     Record Similarity  Other DSA Tools
+         - Aho-Corasick  - Suffix Array     - Dinic
+         - KMP             + Kasai LCP      - Miller-Rabin
+         - Rabin-Karp
+         - Wagner-Fischer
+The exact set of endpoints and class names should match the source code
+in the submitted repository.
+3. The Seven Algorithms and Where They Are Used
+3.1 Aho--Corasick --- Multi-keyword Clinical Search
+Definition: Aho--Corasick searches for multiple patterns in a text
+during a single scan. It builds a trie containing the keywords and uses
+failure links to continue matching efficiently when the current path
+cannot be extended.
+How it works: 1. Inserts all search keywords into a trie. 2. Builds
+failure links using breadth-first search (BFS). 3. Scans the
+patient-record text from left to right. 4. Reports keywords that end at
+each matching position.
+Use in MediSearch: Clinical keyword search.
+Benefit: A query such as fever, cough, diabetes can look for
+several terms in a patient record during one scan, rather than
+independently scanning the record for every keyword.
+3.2 KMP (Knuth--Morris--Pratt) --- Exact Pattern Matching
+Definition: KMP finds an exact pattern inside a larger text. It
+preprocesses the pattern into an LPS table (Longest Proper Prefix that
+is also a Suffix) so that, after a mismatch, it can reuse information
+from the characters already matched.
+How it works: 1. Builds the LPS table for the pattern. 2. Compares
+the pattern with the text. 3. On a mismatch, uses the LPS table to
+determine how far the pattern can shift without rechecking known
+matches.
+Use in MediSearch: Exact pattern-search functionality, where this
+implementation is connected.
+Benefit: Avoids repeatedly comparing characters that are already
+known to match. KMP is an exact matcher; it does not itself correct
+spelling mistakes.
+3.3 Rabin--Karp --- Hash-based Pattern Matching
+Definition: Rabin--Karp searches for a pattern by comparing its hash
+value with the hash of text windows of the same length. It uses a
+rolling hash so that the hash for the next window can be updated
+from the previous window instead of recalculating it from scratch.
+How it works: 1. Calculates a hash for the search pattern. 2.
+Calculates a hash for the first text window of the same length. 3.
+Slides the window through the text and updates its hash using the
+rolling-hash formula. 4. When the hashes match, compares the actual
+characters to confirm the match. This final check matters because
+different strings can produce the same hash (a hash collision).
+Use in MediSearch: Hash-based pattern-search functionality, where
+this implementation is connected.
+Benefit: Demonstrates a hash-based approach to finding candidate
+matches efficiently. A matching hash is not treated as proof by itself;
+the actual text must be checked.
+3.4 Wagner--Fischer Edit Distance --- Fuzzy Matching
+Definition: Wagner--Fischer uses dynamic programming to calculate
+the minimum number of single-character insertions, deletions, and
+substitutions needed to transform one string into another. This number
+is called the edit distance.
+How it works: 1. Creates a dynamic-programming table for prefixes of
+the two strings. 2. Calculates the minimum cost of inserting, deleting,
+or substituting a character. 3. Uses the final distance to measure how
+different the strings are.
+Use in MediSearch: Fuzzy-search functionality, where approximate
+matching is enabled.
+Benefit: Can help match a term with a small spelling difference. For
+example, diabtes is one deletion away from diabetes. Whether it is
+returned depends on the application's matching threshold and matching
+logic.
+3.5 Suffix Array + Kasai LCP --- Patient Record Similarity
+Definition: A suffix array stores the starting positions of all
+suffixes of a text in lexicographically sorted order. Kasai's algorithm
+efficiently computes the Longest Common Prefix (LCP) between
+neighboring suffixes in that sorted order.
+How it works: 1. Builds a suffix array, commonly by sorting suffixes
+through prefix doubling. 2. Uses Kasai's algorithm to calculate LCP
+values efficiently. 3. Uses the common-text information to support
+similarity analysis.
+Use in MediSearch: Patient Record Similarity.
+Benefit: Helps identify shared text between records and provides a
+basis for displaying common-substring or similarity information. Shared
+text alone is not a medical diagnosis and should not be interpreted as
+clinical equivalence.
+3.6 Dinic's Algorithm --- Maximum Capacity Flow
+Definition: Dinic's algorithm finds the maximum possible flow from a
+source node to a destination node in a directed network whose edges have
+capacity limits. It uses BFS to construct a level graph and DFS to send
+flow through that graph until no more blocking flow can be sent.
+How it works: 1. Uses BFS to assign levels to nodes reachable
+through edges with remaining capacity. 2. Uses DFS to send flow along
+valid paths in the level graph. 3. Repeats until the sink cannot be
+reached from the source in the residual network.
+Use in MediSearch: Capacity Flow simulation.
+Benefit: Calculates the maximum flow possible through the configured
+network while respecting each connection's capacity. In this project it
+is a simplified network simulation, not a live hospital-bed or
+patient-allocation system.
+3.7 Miller--Rabin --- Primality Testing
+Definition: Miller--Rabin is a primality-testing algorithm that uses
+modular exponentiation and repeated witness tests to determine whether a
+number is composite or behaves like a prime. A witness can establish
+that a number is composite; passing a probabilistic round means the
+number is probably prime. A deterministic set of bases can guarantee
+the result within a supported numeric range.
+How it works: 1. Handles small numbers and simple cases. 2.
+Expresses the relevant part of n − 1 as a power of two multiplied by
+an odd number. 3. Performs modular-exponentiation tests using selected
+bases (witnesses). 4. Reports composite when a test proves
+compositeness; otherwise reports prime or probably prime according to
+the implementation's guarantees.
+Use in MediSearch: Primality Testing.
+Benefit: Tests large integers much more efficiently than checking
+every possible divisor. The result's deterministic or probabilistic
+status depends on the numeric range and bases used by the
+implementation.
+4. Quick Algorithm Summary
+  Algorithm               Main purpose            MediSearch feature
+  Aho--Corasick           Find multiple keywords  Clinical keyword search
+                          in one scan             
+  KMP                     Find one exact pattern  Exact pattern search
+                          using an LPS table      
+  Rabin--Karp             Find candidate matches  Hash-based pattern
+                          using rolling hashes,   search
+                          then verify characters  
+  Wagner--Fischer         Calculate minimum edit  Fuzzy search
+                          distance between
+                          strings                 
+  Suffix Array + Kasai    Organize suffixes and   Patient record
+  LCP                     calculate common        similarity
+                          prefixes                
+  Dinic                   Calculate maximum flow  Capacity-flow
+                          under edge-capacity     simulation
+                          limits                  
+  Miller--Rabin           Test numbers for        Primality testing
+                      primality               
+The first four algorithms operate on text, but they demonstrate
+different approaches: multiple-pattern matching, exact matching with
+prefix information, hash-based matching, and approximate matching. The
+other three address record similarity, network flow, and number theory.
+5. Other Application Features
+- Login and sessions: Provides access to the application through
+  the login interface.
+- Patient records: Displays stored patient information and
+  supports adding records when enabled.
+- File-based persistence: Patient and user information are stored
+  in files rather than a database.
+- Benchmarks: If enabled in the current build, the benchmark view
+  reports timings for the algorithms being measured. Timings depend on
+  input size and the machine running the application; they should not
+  be treated as universal performance results.
+6. Data Storage and Project Structure
+The project uses file-based storage rather than a database. In the
+repository layout shown in the supplied project snapshot:
+data/
+  patients/        # Patient-record text files
+  users/           # User credential file(s)
+public/
+  index.html       # Frontend page
+  style.css        # Frontend styling
+  script.js        # Frontend behavior and API calls
+src/
+  Main.java        # Java HTTP server and request handling
+  algorithms/      # Algorithm implementations
+  models/          # Patient, user, and result data models
+  services/        # File handling and application services
+ecj.jar            # Eclipse Compiler for Java, if needed
+README.md
+The algorithm classes and service classes listed in this overview should
+be checked against the final submitted source tree before submission,
+because class names and files may change between versions.
+7. Running the Application
+Use the commands and credentials that match the final repository. If the
+project still uses the same Java entry point and Eclipse Compiler for
+Java setup, the general flow is:
+1. Open a terminal in the project directory.
+2. Compile the Java source files with the repository's documented
+   command.
+3. Start the Java application using its main class.
+4. Open the local address configured by the server in a browser.
+5. Sign in using the demo credentials configured in the local user
+   file.
+Do not publish real patient information or production credentials in the
+repository. Confirm the final compile command, port, and demo
+credentials from the current source before presenting or submitting this
+README.
+8. Suggested Demonstration
+A short demo can show the app's features in this order:
+1. Login and patient records: Sign in and open a patient record.
+2. Clinical keyword search: Search for multiple terms such as
+   fever, cough, diabetes to demonstrate Aho--Corasick.
+3. Exact and fuzzy matching: Show exact-pattern and typo-tolerant
+   searches if those options are present in the current interface.
+4. Record similarity: Compare two records and show the shared-text
+   result.
+5. Capacity flow: Run the configured network and explain that Dinic
+   calculates the maximum flow under capacity limits.
+6. Primality test: Test a prime such as 17 and a composite such
+   as 561, explaining Miller--Rabin's result.
+Only demonstrate a feature if it is present and working in the build
+being submitted.
+9. Scope and Limitations
+- This is an academic DSA demonstration, not a production healthcare
+  application.
+- File-based storage is simple for a student project but does not
+  provide the protections and concurrent-access guarantees expected
+  from a production database.
+- The supplied repository description indicates that credential data
+  is stored in files. Review password hashing, session management,
+  transport security, and access control before exposing the
+  application beyond a local demo.
+- Synthetic example records must not be mistaken for real patient
+  data.
+- Algorithm performance depends on input size, implementation, and
+  hardware.
+- Similarity between text records does not establish that two patients
+  have the same condition or require the same treatment.
+10. Project Summary
+MediSearch demonstrates how classic DSA techniques can support different
+functions in a patient-record application. Aho--Corasick, KMP,
+Rabin--Karp, and Wagner--Fischer represent four different text-matching
+approaches; Suffix Array with Kasai LCP supports shared-text analysis;
+Dinic handles a capacity-constrained network; and Miller--Rabin performs
+primality testing. Together, these features provide an academic
+demonstration of string algorithms, dynamic programming, graph
+algorithms, and number-theoretic algorithms in one interface.
